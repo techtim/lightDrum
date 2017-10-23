@@ -1,0 +1,4 @@
+ofxMidi
+ofxXmlSettings
+ofxNetwork
+ofxLedMapper
