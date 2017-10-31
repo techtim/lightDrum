@@ -20,11 +20,11 @@ class Scene {
     unique_ptr<ofxDatGui> m_gui;
     unique_ptr<ofxDatGuiTheme> m_guiTheme;
     bool m_enable;
-    glm::vec4 m_adsr;
+    ofVec4f m_adsr;
     ofColor m_color1, m_color2;
     ofShader m_shader;
     string m_shaderPath;
-    
+
 public:
     Scene()
         : m_enable(false)
@@ -62,7 +62,7 @@ public:
         m_gui->setEnabled(m_enable);
         m_gui->setVisible(m_enable);
     }
-    
+
     void setupGui()
     {
         m_gui = make_unique<ofxDatGui>(ofxDatGuiAnchor::BOTTOM_RIGHT);
@@ -110,24 +110,24 @@ public:
         ofDrawRectangle(pos.x - 10, pos.y - 10, 20, 10);
     }
 
-    float getADSRValue(const glm::vec4 &adsr, const uint64_t &durationMs)
+    float getADSRValue(const ofVec4f &adsr, const uint64_t &durationMs)
     {
-        auto totalAdsr = glm::compAdd(adsr);
+        auto totalAdsr = adsr.x + adsr.y + adsr.z + adsr.w;
         float ADSRvalue = 0;
 
-        if (totalAdsr < durationMs || adsr == glm::vec4(0.0)) {
+        if (totalAdsr < durationMs || adsr == ofVec4f(0.0)) {
             return ADSRvalue;
         }
-        else if (durationMs <= adsr.r) { // R attack
-            ADSRvalue = durationMs / adsr.r;
+        else if (durationMs <= adsr.x) { // R attack
+            ADSRvalue = durationMs / adsr.x;
             if (ADSRvalue > 1.0)
                 ADSRvalue = 1.0;
         }
-        else if (durationMs > adsr.r && durationMs <= adsr.r + adsr.g) { // G decay
+        else if (durationMs > adsr.x && durationMs <= adsr.x + adsr.y) { // G decay
             ADSRvalue = 1.0;
         }
-        else if (adsr.w != 0 && durationMs <= adsr.r + adsr.g + adsr.w) { // W release
-            ADSRvalue = 1.0 - (durationMs - adsr.r - adsr.g) / adsr.w;
+        else if (adsr.w != 0 && durationMs <= adsr.x + adsr.y + adsr.w) { // W release
+            ADSRvalue = 1.0 - (durationMs - adsr.x - adsr.y) / adsr.w;
             if (ADSRvalue < 0)
                 ADSRvalue = 0;
         }
