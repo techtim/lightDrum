@@ -69,6 +69,7 @@
 		05F6CF127D4A621113D4A62F /* ofxMidi.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxMidi.h; path = ../../../addons/ofxMidi/src/ofxMidi.h; sourceTree = SOURCE_ROOT; };
 		208298154B11456DCD0BE131 /* ofxRtMidiIn.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxRtMidiIn.h; path = ../../../addons/ofxMidi/src/desktop/ofxRtMidiIn.h; sourceTree = SOURCE_ROOT; };
 		3A0ACA1E1F9E64BB004E43BC /* Scene.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Scene.h; sourceTree = "<group>"; };
+		3A3655701F9FE7E300AF97F8 /* Pad.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Pad.h; sourceTree = "<group>"; };
 		3A3C5A601F8C05B70078E0EC /* Common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Common.h; sourceTree = "<group>"; };
 		3A3C5A611F8C05B70078E0EC /* json.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = json.hpp; sourceTree = "<group>"; };
 		3A3C5A621F8C05B70078E0EC /* ofJson.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ofJson.h; sourceTree = "<group>"; };
@@ -438,6 +439,7 @@
 				3A3C5AAD1F97C87C0078E0EC /* Drum.cpp */,
 				3A3C5AAE1F97C87C0078E0EC /* Drum.h */,
 				3A0ACA1E1F9E64BB004E43BC /* Scene.h */,
+				3A3655701F9FE7E300AF97F8 /* Pad.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;

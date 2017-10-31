@@ -13,7 +13,7 @@
 #include "ofMain.h"
 #include "ofxMidi.h"
 #include "ofxDatGui.h"
-#include "ofxLedController.h"
+#include "Drum.h"
 
 class ofApp : public ofBaseApp, public ofxMidiListener {
     
@@ -46,13 +46,11 @@ public:
     size_t m_midiPortNum;
     ofxMidiIn m_midiIn;
     ofxMidiMessage m_midiMessage;
-
-    ofFbo m_fbo;
     
     unique_ptr<ofxDatGui> m_gui;
     unique_ptr<ofxDatGuiTheme> m_guiTheme;
     
+    unique_ptr<Drum> m_drum;
+    
     ofJson m_config;
-    unique_ptr<ofxLedController> m_ledCtrl;
-    ofPixels m_grabPixels;
 };

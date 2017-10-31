@@ -17,51 +17,45 @@ void ofApp::setup() {
     ofSetVerticalSync(true);
     ofBackground(50);
     ofSetLogLevel(OF_LOG_VERBOSE);
-
+    ofSetEscapeQuitsApp(false);
+    
     // print input ports to console
     m_midiIn.listPorts(); // via instance
-
     m_midiPortNum = m_midiIn.getNumPorts()-1;
-    // open port by number (you may need to change this)
     m_midiIn.openPort(m_midiPortNum);
     //midiIn.openPort("IAC Pure Data In");	// by name
-    //midiIn.openVirtualPort("ofxMidiIn Input"); // open a virtual port
 
     // don't ignore sysex, timing, & active sense messages,
     // these are ignored by default
     m_midiIn.ignoreTypes(false, false, false);
-    // add ofApp as a listener
     m_midiIn.addListener(this);
-    // print received messages to the console
     m_midiIn.setVerbose(true);
+
+    m_drum = make_unique<Drum>("");
     
     setupGui();
 }
 
 void ofApp::setupGui() {
-//    m_gui = make_unique<ofxDatGui>(ofxDatGuiAnchor::TOP_RIGHT);
-//    m_guiTheme = make_unique<LedMapper::ofxDatGuiThemeLM>();
-//    m_gui->setTheme(m_guiTheme.get());
-//    m_gui->setWidth(LM_GUI_WIDTH);
-//    
-//    m_gui->addToggle(LD_ENABLE_LED_MAP, false);
+    m_gui = make_unique<ofxDatGui>(ofxDatGuiAnchor::TOP_RIGHT);
+    m_guiTheme = make_unique<LedMapper::ofxDatGuiThemeLM>();
+    m_gui->setTheme(m_guiTheme.get());
+    m_gui->setWidth(LM_GUI_WIDTH);
+    
+    m_gui->addToggle(LD_ENABLE_LED_MAP, false);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
-    m_fbo.begin();
-
-    ofClear(0,0,0);
-    
-    m_fbo.end();
-    m_fbo.readToPixels(m_grabPixels);
-//
+    m_drum->update();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-    ofSetColor(200);
+    ofSetColor(255,255,255,255);
 
+    m_drum->draw();
+    
     // draw the last recieved message contents to the screen
     text << "Received: " << ofxMidiMessage::getStatusString(m_midiMessage.status);
     ofDrawBitmapString(text.str(), 20, 20);
@@ -127,6 +121,7 @@ void ofApp::newMidiMessage(ofxMidiMessage& msg) {
 
     // make a copy of the latest message
     m_midiMessage = msg;
+    m_drum->onMidiMessage(msg);
 }
 
 bool ofApp::setMidiPort(size_t port) {
@@ -162,10 +157,10 @@ void ofApp::keyPressed(int key) {
             setMidiPort(3);
             break;
         case 's':
-            m_ledCtrl->save("");
+//            m_ledCtrl->save("");
             break;
         case 'l':
-            m_ledCtrl->load("");
+//            m_ledCtrl->load("");
             break;
         default:
             break;
@@ -190,15 +185,15 @@ void ofApp::onScrollViewEvent(ofxDatGuiScrollViewEvent e)
 
 void ofApp::onButtonClick(ofxDatGuiButtonEvent e)
 {
-    if (e.target->getName() == LD_ENABLE_LED_MAP) {
-        m_ledCtrl->setSelected(dynamic_cast<ofxDatGuiToggle *>(e.target)->getChecked());
-//        add(configFolderPath);
-    }
+//    if (e.target->getName() == LD_ENABLE_LED_MAP) {
+//        m_ledCtrl->setSelected(dynamic_cast<ofxDatGuiToggle *>(e.target)->getChecked());
+////        add(configFolderPath);
+//    }
 }
 
 void ofApp::onSliderEvent(ofxDatGuiSliderEvent e)
 {
-    if (e.target->getName() == LMGUISliderFps) {
-        ofSetFrameRate(e.target->getValue());
-    }
+//    if (e.target->getName() == LMGUISliderFps) {
+//        ofSetFrameRate(e.target->getValue());
+//    }
 }

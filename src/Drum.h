@@ -11,29 +11,9 @@
 #include "ofMain.h"
 #include "ofxLedController.h"
 #include "Scene.h"
+#include "ofxMidiMessage.h"
 
-struct Pad {
-    ofRectangle bounds;
-    ofVec2f from;
-    ofVec2f to;
-    int pitch;
-    float value;
-};
-
-static void to_json(ofJson& j, const Pad& p) {
-    j = ofJson{
-        {"from", {{"x", p.from.x}, {"y", p.from.y}}},
-        {"to", {{"x", p.to.x}, {"y", p.to.y}}},
-        {"pitch", p.pitch}};
-}
-
-static void from_json(const ofJson& j, Pad& p) {
-    p.from.x = j.at("from").at("x").get<float>();
-    p.from.y = j.at("from").at("y").get<float>();
-    p.to.x = j.at("to").at("x").get<float>();
-    p.to.y = j.at("to").at("y").get<float>();
-    p.pitch = j.at("pitch").get<int>();
-}
+using MidiHandler = function<void(const ofxMidiMessage&)>;
 
 class Drum {
     
@@ -44,54 +24,31 @@ class Drum {
     map<size_t, Pad> m_pads;
     map<int, size_t> m_pitchToPad;
     unique_ptr<ofxDatGui> m_gui;
+    unique_ptr<ofxDatGuiScrollView> m_listScenes;
     unique_ptr<ofxDatGuiTheme> m_guiTheme;
-
-    vector<unique_ptr<Scene>> m_scenes;
+    ofFbo m_fbo;
+    vector<Scene> m_scenes;
     size_t m_currentScene;
+    ofRectangle m_grabBounds;
+    MidiHandler m_midiHandler;
+    
 public:
-    Drum(const string &path) {
-        m_ledCtrl = make_unique<ofxLedController>(0, "");
-        loadPads(*m_ledCtrl);
-        setupGui();
-    }
+    Drum(const string &path = "");
     
-    void loadPads(const ofxLedController &ledCtrl) {
-        auto &chanToGrabs = ledCtrl.peekGrabObjects();
-        size_t cntr_id = 1;
-        m_pads.clear();
-        for (auto &chan: chanToGrabs)
-            for (auto &grab : chan) {
-                Pad pad{grab->getBounds(), grab->getFrom(), grab->getTo(), 0, 0.f};
-                m_pads[cntr_id] = move(pad);
-            }
-
-    }
+    void addScene();
+    void selectScene(size_t num);
+    void loadPads(const ofxLedController &ledCtrl);
+    void setupGui();
     
-    void setupGui() {
-        m_gui = make_unique<ofxDatGui>(ofxDatGuiAnchor::TOP_RIGHT);
-        m_guiTheme = make_unique<LedMapper::ofxDatGuiThemeLM>();
-        m_gui->setTheme(m_guiTheme.get());
-        m_gui->setWidth(LM_GUI_WIDTH);
+    void onMidiMessage(ofxMidiMessage& eventArgs);
     
-        m_gui->addToggle(LD_ENABLE_LED_MAP, false);
-    }
-
     void onScrollViewEvent(ofxDatGuiScrollViewEvent e);
     void onButtonClick(ofxDatGuiButtonEvent e);
     void onSliderEvent(ofxDatGuiSliderEvent e);
     
-    void update() {
-        m_ledCtrl->sendUdp(m_grabImage);
-    }
+    void update();
+    void draw();
     
-    void draw() {
-        
-        for (auto &pad : m_pads) {
-            
-        }
-    }
-    
-    void load(){
-        m_ledCtrl->load("");
-    }
+    void load();
+    void save();
 };
