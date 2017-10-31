@@ -18,7 +18,7 @@ static const size_t s_defaultStartNote = 12;
 Drum::Drum(const string &path)
 : m_currentScene(0)
 , m_ledCtrl(make_unique<ofxLedController>(0, ""))
-, m_grabBounds(glm::vec2(0,0), 800, 800)
+, m_grabBounds(0, 0, 800, 800)
 {
     // setupGui must call first
     setupGui();
