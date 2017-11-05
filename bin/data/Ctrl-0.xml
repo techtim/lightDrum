@@ -10,63 +10,63 @@
         <TYPE>1</TYPE>
         <CHANNEL>0</CHANNEL>
         <fromX>51</fromX>
-        <fromY>184</fromY>
+        <fromY>180</fromY>
         <toX>51</toX>
-        <toY>472</toY>
+        <toY>387</toY>
         <bDouble>0</bDouble>
     </LN>
     <LN>
         <TYPE>1</TYPE>
         <CHANNEL>0</CHANNEL>
         <fromX>129</fromX>
-        <fromY>188</fromY>
+        <fromY>180</fromY>
         <toX>129</toX>
-        <toY>477</toY>
+        <toY>387</toY>
         <bDouble>0</bDouble>
     </LN>
     <LN>
         <TYPE>1</TYPE>
         <CHANNEL>0</CHANNEL>
         <fromX>210</fromX>
-        <fromY>188</fromY>
+        <fromY>180</fromY>
         <toX>210</toX>
-        <toY>477</toY>
+        <toY>387</toY>
         <bDouble>0</bDouble>
     </LN>
     <LN>
         <TYPE>1</TYPE>
         <CHANNEL>0</CHANNEL>
         <fromX>291</fromX>
-        <fromY>188</fromY>
+        <fromY>180</fromY>
         <toX>291</toX>
-        <toY>477</toY>
+        <toY>387</toY>
         <bDouble>0</bDouble>
     </LN>
     <LN>
         <TYPE>1</TYPE>
         <CHANNEL>0</CHANNEL>
         <fromX>362</fromX>
-        <fromY>186</fromY>
+        <fromY>180</fromY>
         <toX>362</toX>
-        <toY>475</toY>
+        <toY>387</toY>
         <bDouble>0</bDouble>
     </LN>
     <LN>
         <TYPE>1</TYPE>
         <CHANNEL>0</CHANNEL>
         <fromX>434</fromX>
-        <fromY>184</fromY>
+        <fromY>180</fromY>
         <toX>434</toX>
-        <toY>473</toY>
+        <toY>387</toY>
         <bDouble>0</bDouble>
     </LN>
     <LN>
         <TYPE>1</TYPE>
         <CHANNEL>0</CHANNEL>
         <fromX>506</fromX>
-        <fromY>181</fromY>
+        <fromY>180</fromY>
         <toX>506</toX>
-        <toY>470</toY>
+        <toY>387</toY>
         <bDouble>0</bDouble>
     </LN>
     <LN>

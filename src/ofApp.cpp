@@ -61,12 +61,12 @@ void ofApp::draw() {
     ofDrawBitmapString(text.str(), 20, 20);
     text.str(""); // clear
     
-    if (m_midiMessage.status == MIDI_NOTE_ON) {
-        ofLog(OF_LOG_VERBOSE) << ofxMidiMessage::getStatusString(m_midiMessage.status)
-        << " channel: " << m_midiMessage.channel << " pitch: " << m_midiMessage.pitch
-        << " velocity: " << m_midiMessage.velocity << " control: " << m_midiMessage.control
-        << " value: " << m_midiMessage.value;
-    }
+//    if (m_midiMessage.status == MIDI_NOTE_ON) {
+//        ofLog(OF_LOG_VERBOSE) << ofxMidiMessage::getStatusString(m_midiMessage.status)
+//        << " channel: " << m_midiMessage.channel << " pitch: " << m_midiMessage.pitch
+//        << " velocity: " << m_midiMessage.velocity << " control: " << m_midiMessage.control
+//        << " value: " << m_midiMessage.value;
+//    }
 
     if (m_midiMessage.status == MIDI_PROGRAM_CHANGE) {
         ofLog(OF_LOG_VERBOSE) << "MIDI_PROGRAM_CHANGE - " << "channel: " <<  m_midiMessage.channel
@@ -150,17 +150,29 @@ void ofApp::keyPressed(int key) {
             if (!setMidiPort(m_midiPortNum))
                 ++m_midiPortNum;
             break;
-        case '3':
-            setMidiPort(2);
-            break;
-        case '4':
-            setMidiPort(3);
-            break;
         case 's':
-//            m_ledCtrl->save("");
+            m_drum->save();
             break;
         case 'l':
-//            m_ledCtrl->load("");
+            m_drum->load();
+            break;
+        case '1':
+            m_midiMessage.velocity = 70;
+            m_midiMessage.pitch = 12;
+            m_midiMessage.status = MIDI_NOTE_ON;
+            m_drum->onMidiMessage(m_midiMessage);
+            break;
+        case '2':
+            m_midiMessage.velocity = 70;
+            m_midiMessage.pitch = 13;
+            m_midiMessage.status = MIDI_NOTE_ON;
+            m_drum->onMidiMessage(m_midiMessage);
+            break;
+        case '3':
+            m_midiMessage.velocity = 70;
+            m_midiMessage.pitch = 14;
+            m_midiMessage.status = MIDI_NOTE_ON;
+            m_drum->onMidiMessage(m_midiMessage);
             break;
         default:
             break;
