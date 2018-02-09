@@ -23,7 +23,7 @@ struct Pad {
     }
 
     Pad(ofRectangle _bounds, ofVec2f _from, ofVec2f _to, int _pitch = 0, float _value = 0,
-        int _velocity = 0, uint64_t _lastTrigTime = 0)
+        float _velocity = 0, uint64_t _lastTrigTime = 0)
         : bounds(_bounds)
         , from(_from)
         , to(_to)
@@ -38,8 +38,7 @@ struct Pad {
     ofVec2f from;
     ofVec2f to;
     int pitch;
-    float value;
-    int velocity;
+    float value, velocity;
     uint64_t lastTrigTime;
 };
 

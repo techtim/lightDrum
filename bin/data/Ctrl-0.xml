@@ -1,6 +1,7 @@
 <CONF>
     <colorType>3</colorType>
     <PixInLed>2.000000000</PixInLed>
+    <fps>25.000000000</fps>
     <UdpSend>1</UdpSend>
     <IpAddress>192.168.2.103</IpAddress>
     <Port>3001</Port>

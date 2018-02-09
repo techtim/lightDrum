@@ -1,132 +1,86 @@
-/*
- * Copyright (c) 2013 Dan Wilcox <danomatika@gmail.com>
- *
- * BSD Simplified License.
- * For information on usage and redistribution, and for a DISCLAIMER OF ALL
- * WARRANTIES, see the file, "LICENSE.txt," in this distribution.
- *
- * See https://github.com/danomatika/ofxMidi for documentation
- *
- */
 #include "ofApp.h"
 
 static const string LD_ENABLE_LED_MAP = "enable led mapping";
 
 //--------------------------------------------------------------
-void ofApp::setup() {
+void ofApp::setup()
+{
     ofSetVerticalSync(true);
-    ofBackground(50);
+    ofBackground(0, 0, 0);
+    ofSetFrameRate(60);
+    
+#ifndef NDEBUG
     ofSetLogLevel(OF_LOG_VERBOSE);
+#endif
+
     ofSetEscapeQuitsApp(false);
     
     // print input ports to console
     m_midiIn.listPorts(); // via instance
-    m_midiPortNum = m_midiIn.getNumPorts()-1;
-    m_midiIn.openPort(m_midiPortNum);
-    //midiIn.openPort("IAC Pure Data In");	// by name
+    //setMidiPort(m_midiIn.getNumPorts() - 1);
+    setMidiPort(m_drum.getMidiDevice());
+    // midiIn.openPort("IAC Pure Data In"); // by name
 
     // don't ignore sysex, timing, & active sense messages,
     // these are ignored by default
-    m_midiIn.ignoreTypes(false, false, false);
+    m_midiIn.ignoreTypes(true, false, false);
     m_midiIn.addListener(this);
     m_midiIn.setVerbose(true);
 
-    m_drum = make_unique<Drum>("");
-    
-    setupGui();
-}
-
-void ofApp::setupGui() {
-    m_gui = make_unique<ofxDatGui>(ofxDatGuiAnchor::TOP_RIGHT);
-    m_guiTheme = make_unique<LedMapper::ofxDatGuiThemeLM>();
-    m_gui->setTheme(m_guiTheme.get());
-    m_gui->setWidth(LM_GUI_WIDTH);
-    
-    m_gui->addToggle(LD_ENABLE_LED_MAP, false);
+    ofSetLogLevel(OF_LOG_WARNING);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
-    m_drum->update();
+    m_drum.update();
 }
 
 //--------------------------------------------------------------
-void ofApp::draw() {
-    ofSetColor(255,255,255,255);
+void ofApp::draw()
+{
+    m_drum.draw();
 
-    m_drum->draw();
-    
+    ofSetColor(255, 255, 255, 200);
     // draw the last recieved message contents to the screen
-    text << "Received: " << ofxMidiMessage::getStatusString(m_midiMessage.status);
+    text << "From MIDI device:" << m_midiPortName << " Received: " << ofxMidiMessage::getStatusString(m_midiMessage.status);
     ofDrawBitmapString(text.str(), 20, 20);
     text.str(""); // clear
-    
-//    if (m_midiMessage.status == MIDI_NOTE_ON) {
-//        ofLog(OF_LOG_VERBOSE) << ofxMidiMessage::getStatusString(m_midiMessage.status)
-//        << " channel: " << m_midiMessage.channel << " pitch: " << m_midiMessage.pitch
-//        << " velocity: " << m_midiMessage.velocity << " control: " << m_midiMessage.control
-//        << " value: " << m_midiMessage.value;
-//    }
 
-    if (m_midiMessage.status == MIDI_PROGRAM_CHANGE) {
-        ofLog(OF_LOG_VERBOSE) << "MIDI_PROGRAM_CHANGE - " << "channel: " <<  m_midiMessage.channel
-        << " pitch: " << m_midiMessage.pitch
-        << " velocity: " << m_midiMessage.velocity << "control: " << m_midiMessage.control
-        << " value: " << m_midiMessage.value;
-    }
-    text << "channel: " << m_midiMessage.channel;
-    ofDrawBitmapString(text.str(), 20, 34);
-    text.str(""); // clear
-    
-    text << "pitch: " << m_midiMessage.pitch;
-    ofDrawBitmapString(text.str(), 20, 48);
-    text.str(""); // clear
-    ofRectangle(20, 58, ofMap(m_midiMessage.pitch, 0, 127, 0, ofGetWidth()-40), 20);
-    
-    text << "velocity: " << m_midiMessage.velocity;
-    ofDrawBitmapString(text.str(), 20, 96);
-    text.str(""); // clear
-    ofRectangle(20, 105, ofMap(m_midiMessage.velocity, 0, 127, 0, ofGetWidth()-40), 20);
-    
-    text << "control: " << m_midiMessage.control;
-    ofDrawBitmapString(text.str(), 20, 144);
-    text.str(""); // clear
-    ofRectangle(20, 154, ofMap(m_midiMessage.control, 0, 127, 0, ofGetWidth()-40), 20);
-    
-    text << "value: " << m_midiMessage.value;
-    ofDrawBitmapString(text.str(), 20, 192);
-    text.str(""); // clear
-    if(m_midiMessage.status == MIDI_PITCH_BEND) {
-        ofRectangle(20, 202, ofMap(m_midiMessage.value, 0, MIDI_MAX_BEND, 0, ofGetWidth()-40), 20);
-    }
-    else {
-        ofRectangle(20, 202, ofMap(m_midiMessage.value, 0, 127, 0, ofGetWidth()-40), 20);
-    }
+    ofSetColor(100, 255, 255, 255);
 
-    text << "delta: " << m_midiMessage.deltatime;
-    ofDrawBitmapString(text.str(), 20, 240);
+    text << "channel: " << m_midiMessage.channel << " pitch: " << m_midiMessage.pitch
+    << " velocity: " << m_midiMessage.velocity;
+    ofDrawBitmapString(text.str(), 20,
+                       40);
     text.str(""); // clear
+
+#if !defined(TARGET_RASPBERRY_PI)
+    ofSetWindowTitle("lightDrum (fps: " + ofToString(static_cast<int>(ofGetFrameRate())) + ")");
+#endif
 }
 
 //--------------------------------------------------------------
-void ofApp::exit() {
-
+void ofApp::exit()
+{
     // clean up
     m_midiIn.closePort();
     m_midiIn.removeListener(this);
 }
 
 //--------------------------------------------------------------
-void ofApp::newMidiMessage(ofxMidiMessage& msg) {
+void ofApp::newMidiMessage(ofxMidiMessage &msg)
+{
 
     // make a copy of the latest message
     m_midiMessage = msg;
-    m_drum->onMidiMessage(msg);
+    m_drum.onMidiMessage(msg);
 }
 
-bool ofApp::setMidiPort(size_t port) {
+bool ofApp::setMidiPort(size_t port)
+{
     if (port < m_midiIn.getPortList().size()) {
         m_midiPortNum = port;
+        m_midiPortName = m_midiIn.getPortList().at(port);
         m_midiIn.openPort(port);
         return true;
     }
@@ -134,9 +88,10 @@ bool ofApp::setMidiPort(size_t port) {
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key) {
+void ofApp::keyPressed(int key)
+{
 
-    switch(key) {
+    switch (key) {
         case 'i':
             m_midiIn.listPorts();
             break;
@@ -146,66 +101,59 @@ void ofApp::keyPressed(int key) {
                 --m_midiPortNum;
             break;
         case OF_KEY_DOWN:
-            --m_midiPortNum;;
+            --m_midiPortNum;
+            ;
             if (!setMidiPort(m_midiPortNum))
                 ++m_midiPortNum;
             break;
         case 's':
-            m_drum->save();
+            m_drum.save(m_midiPortNum);
             break;
         case 'l':
-            m_drum->load();
+            m_drum.load();
+            setMidiPort(m_drum.getMidiDevice());
             break;
         case '1':
-            m_midiMessage.velocity = 70;
-            m_midiMessage.pitch = 12;
-            m_midiMessage.status = MIDI_NOTE_ON;
-            m_drum->onMidiMessage(m_midiMessage);
+            m_midiMessage = makeFakeMidi(12, m_drum.getMidiChannel());
+            m_drum.onMidiMessage(m_midiMessage);
             break;
         case '2':
-            m_midiMessage.velocity = 70;
-            m_midiMessage.pitch = 13;
-            m_midiMessage.status = MIDI_NOTE_ON;
-            m_drum->onMidiMessage(m_midiMessage);
+           m_midiMessage = makeFakeMidi(13, m_drum.getMidiChannel());
+           m_drum.onMidiMessage(m_midiMessage);
             break;
         case '3':
-            m_midiMessage.velocity = 70;
-            m_midiMessage.pitch = 14;
-            m_midiMessage.status = MIDI_NOTE_ON;
-            m_drum->onMidiMessage(m_midiMessage);
+           m_midiMessage = makeFakeMidi(14, m_drum.getMidiChannel());
+           m_drum.onMidiMessage(m_midiMessage);
+            break;
+        case '4':
+           m_midiMessage = makeFakeMidi(19, m_drum.getMidiChannel());
+           m_drum.onMidiMessage(m_midiMessage);
+            break;
+        case '5':
+           m_midiMessage = makeFakeMidi(20, m_drum.getMidiChannel());
+           m_drum.onMidiMessage(m_midiMessage);
+            break;
+        case '6':
+           m_midiMessage = makeFakeMidi(21, m_drum.getMidiChannel());
+           m_drum.onMidiMessage(m_midiMessage);
             break;
         default:
             break;
     }
 }
 
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key) {
+ofxMidiMessage ofApp::makeFakeMidi(int pitch, int channel) {
+    ofxMidiMessage message;
+    message.pitch = pitch;
+    message.channel = channel;
+    message.velocity = ofRandom(10, 125);
+    message.status = MIDI_NOTE_ON;
+    return message;
 }
 
 //--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button) {
-}
+void ofApp::keyReleased(int key) {}
 
-void ofApp::onScrollViewEvent(ofxDatGuiScrollViewEvent e)
-{
-    if (e.parent->getName() == LMGUIListControllers) {
-        // check if item from list selected
-//        setCurrentController(ofToInt(e.target->getName()));
-    }
-}
+//--------------------------------------------------------------
+void ofApp::mousePressed(int x, int y, int button) {}
 
-void ofApp::onButtonClick(ofxDatGuiButtonEvent e)
-{
-//    if (e.target->getName() == LD_ENABLE_LED_MAP) {
-//        m_ledCtrl->setSelected(dynamic_cast<ofxDatGuiToggle *>(e.target)->getChecked());
-////        add(configFolderPath);
-//    }
-}
-
-void ofApp::onSliderEvent(ofxDatGuiSliderEvent e)
-{
-//    if (e.target->getName() == LMGUISliderFps) {
-//        ofSetFrameRate(e.target->getValue());
-//    }
-}
