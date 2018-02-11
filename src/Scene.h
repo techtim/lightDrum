@@ -27,11 +27,8 @@ const static string s_ShaderFolder = "shaders/";
 static vector<string> s_shadersList;
 
 class Scene {
-    unique_ptr<ofxDatGui> m_gui;
-    unique_ptr<ofxDatGuiTheme> m_guiTheme;
     //    ofShader m_shader;
     bool m_bShaderLoad = false;
-    bool m_bGuiSetup = false;
 
 public:
     size_t m_id;
@@ -43,129 +40,81 @@ public:
     uint8_t m_routeVelocity;
 
     Scene(size_t _id = 0)
-        : m_gui(nullptr)
-        , m_guiTheme(nullptr)
-        , m_bShaderLoad(false)
-        , m_id(_id)
-        , m_enable(false)
-        , m_adsr(200, 0, 0, 200)
-        , m_color1(255)
-        , m_color2(255)
-        , m_shaderName("default")
-        , m_routeEnvelope(1)
-        , m_routeVelocity(0)
+    : m_bShaderLoad(false)
+    , m_id(_id)
+    , m_enable(false)
+    , m_adsr(200, 0, 0, 200)
+    , m_color1(255)
+    , m_color2(255)
+    , m_shaderName("default")
+    , m_routeEnvelope(1)
+    , m_routeVelocity(0)
     {
-        m_bGuiSetup = false;
     }
-
-    //    Scene(const Scene &other)
-    //        : m_gui(nullptr)
-    //        , m_guiTheme(nullptr)
-    //        , m_id(other.m_id)
-    //        , m_enable(other.m_enable)
-    //        , m_adsr(other.m_adsr)
-    //        , m_color1(other.m_color1)
-    //        , m_color2(other.m_color2)
-    //        , m_shaderName(other.m_shaderName)
-    //        , m_routeEnvelope(other.m_routeEnvelope)
-    //        , m_routeVelocity(other.m_routeVelocity)
-    //    {
-    //        m_bGuiSetup = false;
-    //    }
-    //
-    //    Scene(Scene &&other)
-    //        : m_shaderName(move(other.m_shaderName))
-    //        , m_id(move(other.m_id))
-    //        , m_enable(other.m_enable)
-    //        , m_adsr(move(other.m_adsr))
-    //        , m_color1(move(other.m_color1))
-    //        , m_color2(move(other.m_color2))
-    //        , m_routeEnvelope(move(other.m_routeEnvelope))
-    //        , m_routeVelocity(move(other.m_routeVelocity))
-    //    {
-    //        m_bGuiSetup = false;
-    //    }
-    //
-    //    Scene &operator=(const Scene &other)
-    //    {
-    //        m_id = other.m_id;
-    //        m_enable = other.m_enable;
-    //        m_adsr = other.m_adsr;
-    //        m_color1 = other.m_color1;
-    //        m_color2 = other.m_color2;
-    //        m_shaderName = other.m_shaderName;
-    //        m_routeEnvelope = other.m_routeEnvelope;
-    //        m_routeVelocity = other.m_routeVelocity;
-    //        m_bGuiSetup = false;
-    //        return *this;
-    //    }
-
-    void setEnable(bool bEnable)
+    
+    static unique_ptr<ofxDatGui> GenerateGui()
     {
-        if (m_enable == bEnable)
-            return;
+        ofLogVerbose() << "Generate scene gui";
 
-        m_enable = bEnable;
+        unique_ptr<ofxDatGui> gui = make_unique<ofxDatGui>();
+        unique_ptr<ofxDatGuiThemeCharcoal> guiTheme = make_unique<ofxDatGuiThemeCharcoal>();
+        gui->setTheme(guiTheme.get(), true);
+        gui->addHeader("Scene");
+        gui->setWidth(200);
+        gui->setPosition(ofGetWidth() - 200, ofGetHeight() / 2 - 20);
+        gui->setAutoDraw(false);
 
-        if (m_enable && !m_bGuiSetup)
-            setupGui();
+        gui->addColorPicker("color 1");
+        gui->addColorPicker("color 2");
 
-        if (m_bGuiSetup) {
-            m_gui->setEnabled(m_enable);
-            m_gui->setVisible(m_enable);
-        }
-    }
-
-    void setupGui()
-    {
-        //        return;
-        ofLogVerbose() << "Scene id=" << m_id << " setupGui";
-
-        if (m_gui == nullptr)
-            m_gui = make_unique<ofxDatGui>();
-
-        m_gui->clear();
-        unique_ptr<ofxDatGuiTheme> guiTheme = make_unique<ofxDatGuiThemeCharcoal>();
-        m_gui->setTheme(guiTheme.get(), true);
-        m_gui->addHeader("Scene");
-        m_gui->setWidth(200);
-        m_gui->setPosition(ofGetWidth() - 200, ofGetHeight() / 2);
-        m_gui->setAutoDraw(false);
-        auto picker = m_gui->addColorPicker("color 1");
-        picker->bind(m_color1);
-        picker = m_gui->addColorPicker("color 2");
-        picker->bind(m_color2);
-
-        m_gui->addLabel("ADSR Envelope in ms");
-        auto slider = m_gui->addSlider("attack", 0, 1000.0);
-        slider->bind(m_adsr.x);
+        gui->addLabel("ADSR Envelope in ms");
+        auto slider = gui->addSlider("attack", 0, 1000.0);
         slider->setPrecision(0);
-        slider = m_gui->addSlider("decay", 0, 1000.0);
-        slider->bind(m_adsr.y);
+        slider = gui->addSlider("decay", 0, 1000.0);
         slider->setPrecision(0);
-        slider = m_gui->addSlider("sustain", 0, 1000.0);
-        slider->bind(m_adsr.z);
+        slider = gui->addSlider("sustain", 0, 1000.0);
         slider->setPrecision(0);
-        slider = m_gui->addSlider("release", 0, 1000.0);
-        slider->bind(m_adsr.w);
+        slider = gui->addSlider("release", 0, 1000.0);
         slider->setPrecision(0);
 
-        auto dropDown = m_gui->addDropdown(LDGUI_VALUE_ROUTE_ENV, s_PadValueToStr);
-        dropDown->select(m_routeEnvelope);
-        dropDown->onDropdownEvent(this, &Scene::onDropdownEvent);
+        gui->addDropdown(LDGUI_VALUE_ROUTE_ENV, s_PadValueToStr);
 
-        m_gui->addLabel("MIDI Velocity");
-        dropDown = m_gui->addDropdown(LDGUI_VALUE_ROUTE_VEL, s_PadValueToStr);
-        dropDown->select(m_routeVelocity);
-        dropDown->onDropdownEvent(this, &Scene::onDropdownEvent);
+        gui->addLabel("MIDI Velocity");
+        gui->addDropdown(LDGUI_VALUE_ROUTE_VEL, s_PadValueToStr);
+
         /// Shaders
         if (s_shadersList.empty()) {
         }
 
-        m_gui->setEnabled(m_enable);
-        m_gui->setVisible(m_enable);
+        gui->setEnabled(true);
+        gui->setVisible(true);
 
-        m_bGuiSetup = true;
+        return move(gui);
+    }
+
+    void bindGui(ofxDatGui *gui)
+    {
+        gui->getSlider("attack")->bind(m_adsr.x);
+        gui->getSlider("decay")->bind(m_adsr.y);
+        gui->getSlider("sustain")->bind(m_adsr.z);
+        gui->getSlider("release")->bind(m_adsr.w);
+        /// bind first update widget color after
+        gui->getColorPicker("color 1")->bind(m_color1);
+        gui->getColorPicker("color 1")->setColor(m_color1);
+        gui->getColorPicker("color 2")->bind(m_color2);
+        gui->getColorPicker("color 2")->setColor(m_color2);
+
+        auto dropDown = gui->getDropdown(LDGUI_VALUE_ROUTE_ENV);
+        if (dropDown->getName() != "X") {
+            dropDown->onDropdownEvent(this, &Scene::onDropdownEvent);
+            dropDown->select(m_routeEnvelope);
+        }
+
+        dropDown = gui->getDropdown(LDGUI_VALUE_ROUTE_VEL);
+        if (dropDown->getName() != "X") {
+            dropDown->onDropdownEvent(this, &Scene::onDropdownEvent);
+            dropDown->select(m_routeVelocity);
+        }
     }
 
     void updateShader()
@@ -189,21 +138,7 @@ public:
 
     void reloadShader() { m_bShaderLoad = false; }
 
-    void update()
-    {
-        if (m_bGuiSetup)
-            m_gui->update();
-    }
-
-    void draw()
-    {
-        if (!m_bGuiSetup)
-            setupGui();
-        if (m_bGuiSetup)
-            m_gui->draw();
-    }
-
-    void updateAndDraw(Pad &pad)
+    void updateAndDraw(Pad &pad) const
     {
         auto durationMs = ofGetSystemTime() - pad.lastTrigTime;
         ofNoFill();
@@ -276,7 +211,7 @@ public:
         ofDrawRectangle(pad.bounds);
     }
 
-    float getADSRValue(const ofVec4f &adsr, const uint64_t &durationMs)
+    float getADSRValue(const ofVec4f &adsr, const uint64_t &durationMs) const
     {
         auto totalAdsr = adsr.x + adsr.y + adsr.z + adsr.w;
         float ADSRvalue = 0;

@@ -40,9 +40,10 @@ class Drum {
 
     ofxUDPManager m_configSender, m_configReceiver;
 
+    void updateScenes();
     void loadFromJson(const ofJson &json);
     void realLoad();
-
+    
 public:
     Drum(const string &path = "");
 

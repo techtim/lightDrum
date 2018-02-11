@@ -36,11 +36,11 @@ Drum::Drum(const string &path)
     // setupGui must call first
     setupGui();
     realLoad();
-    
+
     m_configReceiver.Create();
     m_configReceiver.Bind(s_configInPort);
     m_configReceiver.SetNonBlocking(true);
-    
+
 #if !defined(TARGET_RASPBERRY_PI)
     m_configSender.Create();
     m_configSender.Connect(m_ledCtrl->getIP().c_str(), s_configInPort);
@@ -52,7 +52,7 @@ Drum::Drum(const string &path)
 void Drum::setupGui()
 {
     m_gui = make_unique<ofxDatGui>(ofxDatGuiAnchor::TOP_RIGHT);
-//    m_guiScene = Scene::generateGui();
+    m_guiScene = Scene::GenerateGui();
     unique_ptr<ofxDatGuiThemeLD> guiTheme = make_unique<ofxDatGuiThemeLD>();
     m_gui->setTheme(guiTheme.get(), true);
     m_gui->setWidth(LD_GUI_WIDTH);
@@ -98,15 +98,14 @@ void Drum::update()
         m_ledCtrl->sendUdp(m_grabImage);
         m_lastFrameTime = now;
     }
-    
+
     if (m_nextScene != m_currentScene)
         selectScene(m_nextScene);
 
     m_gui->update();
     m_listScenes->update();
-
-    if (m_currentScene < m_scenes.size())
-        m_scenes[m_currentScene].update();
+    m_guiScene->update();
+    
 }
 
 void Drum::draw()
@@ -114,21 +113,23 @@ void Drum::draw()
     realLoad();
     ofEnableAlphaBlending();
 
+    /// draw pads state with current scene
     if (!m_scenes.empty() && m_currentScene < m_scenes.size()) {
         m_fbo.begin();
+
         glClearColor(0, 0, 0, 255);
         glClear(GL_COLOR_BUFFER_BIT);
         ofSetColor(255, 255, 255, 255);
-        //        ofDrawRectangle(m_grabBounds);
         for (auto &pad : m_pads) {
             m_scenes[m_currentScene].updateAndDraw(pad);
         }
+        
         m_fbo.end();
         ofSetColor(255, 255, 255, 255);
         m_fbo.draw(m_grabBounds);
         m_fbo.readToPixels(m_grabImage);
-        m_scenes[m_currentScene].draw();
     }
+    
     ofSetColor(255, 255, 255, 255);
     ofNoFill();
     ofDrawRectangle(m_grabBounds);
@@ -136,10 +137,11 @@ void Drum::draw()
 
     m_ledCtrl->draw();
 
-     m_gui->setPosition(ofGetWidth() - LM_GUI_WIDTH, 0);
-     m_gui->draw();
-     m_listScenes->setPosition(m_gui->getPosition().x, m_gui->getPosition().y + m_gui->getHeight());
-     m_listScenes->draw();
+    m_gui->setPosition(ofGetWidth() - LM_GUI_WIDTH, 0);
+    m_gui->draw();
+    m_listScenes->setPosition(m_gui->getPosition().x, m_gui->getPosition().y + m_gui->getHeight());
+    m_listScenes->draw();
+    m_guiScene->draw();
 }
 
 void Drum::onMidiMessage(const ofxMidiMessage &midi)
@@ -161,13 +163,14 @@ void Drum::onMidiMessage(const ofxMidiMessage &midi)
         m_pads[m_pitchToPad[midi.pitch]].lastTrigTime = ofGetSystemTime();
         m_pads[m_pitchToPad[midi.pitch]].velocity = ofMap(midi.velocity, 0.0, 127.0, 0.0f, 1.0f);
         ofLogVerbose() << "Pitch To Pad : " << midi.pitch << "->" << m_pitchToPad[midi.pitch]
-        << " velocity: " << midi.velocity << " -> " <<  m_pads[m_pitchToPad[midi.pitch]].velocity;
+                       << " velocity: " << midi.velocity << " -> "
+                       << m_pads[m_pitchToPad[midi.pitch]].velocity;
     }
     else if (midi.status == MidiStatus::MIDI_PROGRAM_CHANGE) {
         ofLogWarning() << "MIDI_PROGRAM_CHANGE - "
-                              << "channel: " << midi.channel << " pitch: " << midi.pitch
-                              << " velocity: " << midi.velocity << "control: " << midi.control
-                              << " value: " << midi.value;
+                       << "channel: " << midi.channel << " pitch: " << midi.pitch
+                       << " velocity: " << midi.velocity << "control: " << midi.control
+                       << " value: " << midi.value;
         m_nextScene = midi.value;
     }
 }
@@ -201,9 +204,9 @@ void Drum::onButtonClick(ofxDatGuiButtonEvent e)
         sendConfig();
     }
 
-    if (e.target->getName() ==LDGUIButtonLoad)
+    if (e.target->getName() == LDGUIButtonLoad)
         load();
-    if (e.target->getName() ==LDGUIButtonSave)
+    if (e.target->getName() == LDGUIButtonSave)
         save();
 }
 
@@ -215,19 +218,19 @@ void Drum::addScene()
 
 void Drum::selectScene(size_t num)
 {
-    m_listScenes->get(m_currentScene)->setBackgroundColor(0);
-    m_scenes[m_currentScene].setEnable(false);
+    if (m_currentScene < m_listScenes->children.size())
+        m_listScenes->get(m_currentScene)->setBackgroundColor(0);
 
     m_currentScene = num % m_scenes.size();
     m_nextScene = m_currentScene;
+
+    if (m_currentScene < m_listScenes->children.size())
+        m_listScenes->get(m_currentScene)->setBackgroundColor(50);
     
-    m_listScenes->get(m_currentScene)->setBackgroundColor(50);
-    m_scenes[m_currentScene].setEnable(true);
+    m_scenes[m_currentScene].bindGui(m_guiScene.get());
     ofLogVerbose() << "Select m_currentScene=" << m_currentScene;
 }
-void Drum::onSliderEvent(ofxDatGuiSliderEvent e)
-{
-}
+void Drum::onSliderEvent(ofxDatGuiSliderEvent e) {}
 
 /// SAVE & LOAD
 void Drum::loadPads(const ofxLedController &ledCtrl)
@@ -246,12 +249,10 @@ void Drum::loadPads(const ofxLedController &ledCtrl)
         }
 }
 
-void Drum::load()
-{
-    m_bNeedLoad = true;
-}
+void Drum::load() { m_bNeedLoad = true; }
 
-void Drum::realLoad() {
+void Drum::realLoad()
+{
     if (!m_bNeedLoad)
         return;
 
@@ -264,9 +265,9 @@ void Drum::realLoad() {
 #if !defined(TARGET_RASPBERRY_PI)
     m_configSender.Connect(m_ledCtrl->getIP().c_str(), s_configInPort);
 #endif
-    
+
     m_grabBounds = (m_ledCtrl != nullptr ? m_ledCtrl->peekBounds()
-                                : ofRectangle(0,0,ofGetWidth(), ofGetHeight()));
+                                         : ofRectangle(0, 0, ofGetWidth(), ofGetHeight()));
     /// RPI specific RGBA textures, works correct only with 4 channel tex
     m_fbo.allocate(m_grabBounds.width, m_grabBounds.height, GL_RGBA);
     m_fbo.begin();
@@ -283,25 +284,34 @@ void Drum::realLoad() {
     if (m_scenes.empty())
         addScene();
 
-    selectScene(0);
+    updateScenes();
 
     ofLogVerbose() << "Load Drum finished: m_grabBounds=" << m_grabBounds
-    << " num pads=" << m_pads.size() << " num scenes=" << m_scenes.size();
-        m_config["pads"] = m_pads;
+                   << " num pads=" << m_pads.size() << " num scenes=" << m_scenes.size();
+    m_config["pads"] = m_pads;
     m_bNeedLoad = false;
+}
+
+void Drum::updateScenes() {
+    m_listScenes->clear();
+    
+    for (size_t i = 0; i < m_scenes.size(); ++i)
+        m_listScenes->add(ofToString(i + 1));
+    
+    if (m_scenes.empty())
+        addScene();
+    
+    selectScene(m_currentScene);
 }
 
 void Drum::loadFromJson(const ofJson &json)
 {
-//    m_config.clear();
-//    m_config = json;
-
     if (json.count("midiChannel"))
         m_midiChannel = json.at("midiChannel").get<int>();
 
     if (json.count("midiDevice"))
         m_midiDevice = json.at("midiDevice").get<int>();
-    
+
     if (json.count("pads")) {
         try {
             m_pads = json.at("pads").get<vector<Pad>>();
@@ -317,12 +327,12 @@ void Drum::loadFromJson(const ofJson &json)
             loadPads(*m_ledCtrl);
         }
     }
-    
+
     if (json.count("scenes")) {
         try {
             m_scenes.clear();
             m_scenes = json.at("scenes").get<vector<Scene>>();
-            ofLogVerbose() <<  m_scenes.size() << " scenes load";
+            ofLogVerbose() << m_scenes.size() << " scenes load";
         }
         catch (std::exception &err) {
             ofLogError() << "Scenes load Failed: " << err.what();
@@ -335,7 +345,7 @@ void Drum::save(size_t midiDevice)
     m_ledCtrl->save("");
 
     m_midiDevice = midiDevice;
-    
+
     m_config.clear();
 
     ofJson pads_array;
@@ -353,7 +363,8 @@ void Drum::save(size_t midiDevice)
 }
 
 constexpr char flag = 1;
-void Drum::sendBlock() {
+void Drum::sendBlock()
+{
     if (m_ledCtrl->isStatusOk()) {
         m_configSender.Send(&flag, 1);
     }
@@ -390,6 +401,7 @@ void Drum::receiveConfigOrBlock()
         in >> json;
         ofLogWarning() << "Json config received: \n" << json.dump(4);
         loadFromJson(json);
+        updateScenes();
         save();
     }
     catch (const std::exception &err) {
