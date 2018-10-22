@@ -8,4 +8,4 @@ Main thing about it is that user can map lights, configure colors, animation tri
 
 Based on [ledMapper](https://github.com/techtim/ledMapper), to have simple all-in-one solution, kind of MIDI addon for content generation.
 
-[![lightDrum live demo](https://i.ytimg.com/vi/TK-nKPbnjm8/hqdefault.jpg)](https://youtu.be/AU8bOZ9H7ms)
+[![lightDrum live demo](https://i.ytimg.com/vi/TK-nKPbnjm8/hqdefault.jpg)](https://youtu.be/TK-nKPbnjm8)
