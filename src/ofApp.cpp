@@ -16,7 +16,7 @@ void ofApp::setup()
     ofSetEscapeQuitsApp(false);
     
     // print input ports to console
-    m_midiIn.listPorts(); // via instance
+    m_midiIn.listInPorts(); // via instance
     //setMidiPort(m_midiIn.getNumPorts() - 1);
     setMidiPort(m_drum.getMidiDevice());
     // midiIn.openPort("IAC Pure Data In"); // by name
@@ -78,9 +78,9 @@ void ofApp::newMidiMessage(ofxMidiMessage &msg)
 
 bool ofApp::setMidiPort(size_t port)
 {
-    if (port < m_midiIn.getPortList().size()) {
+    if (port < m_midiIn.getInPortList().size()) {
         m_midiPortNum = port;
-        m_midiPortName = m_midiIn.getPortList().at(port);
+        m_midiPortName = m_midiIn.getInPortList().at(port);
         m_midiIn.openPort(port);
         return true;
     }
@@ -93,7 +93,7 @@ void ofApp::keyPressed(int key)
 
     switch (key) {
         case 'i':
-            m_midiIn.listPorts();
+            m_midiIn.listInPorts();
             break;
         case OF_KEY_UP:
             ++m_midiPortNum;

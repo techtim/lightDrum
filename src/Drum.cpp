@@ -53,8 +53,8 @@ void Drum::setupGui()
 {
     m_gui = make_unique<ofxDatGui>(ofxDatGuiAnchor::TOP_RIGHT);
     m_guiScene = Scene::GenerateGui();
-    unique_ptr<ofxDatGuiThemeLD> guiTheme = make_unique<ofxDatGuiThemeLD>();
-    m_gui->setTheme(guiTheme.get(), true);
+    m_guiTheme = make_unique<ofxDatGuiThemeLD>();
+    m_gui->setTheme(m_guiTheme.get(), true);
     m_gui->setWidth(LD_GUI_WIDTH);
     m_gui->addHeader("Drum");
 
@@ -82,6 +82,7 @@ void Drum::setupGui()
 
     m_listScenes = make_unique<ofxDatGuiScrollView>(LDGUIListScenes, LDGUIListSize);
     m_listScenes->onScrollViewEvent(this, &Drum::onScrollViewEvent);
+    m_listScenes->setTheme(m_guiTheme.get());
     m_listScenes->setWidth(LD_GUI_WIDTH);
     m_listScenes->setPosition(m_gui->getPosition().x, m_gui->getPosition().y + m_gui->getHeight());
     m_listScenes->setBackgroundColor(ofColor(10));
@@ -134,14 +135,18 @@ void Drum::draw()
     ofNoFill();
     ofDrawRectangle(m_grabBounds);
     ofFill();
-
-    m_ledCtrl->draw();
-
+    
     m_gui->setPosition(ofGetWidth() - LM_GUI_WIDTH, 0);
     m_gui->draw();
-    m_listScenes->setPosition(m_gui->getPosition().x, m_gui->getPosition().y + m_gui->getHeight());
-    m_listScenes->draw();
-    m_guiScene->draw();
+    
+    if (m_ledCtrl->isSelected()) {
+        m_ledCtrl->draw();
+    }
+    else {
+        m_listScenes->setPosition(m_gui->getPosition().x, m_gui->getPosition().y + m_gui->getHeight());
+        m_listScenes->draw();
+        m_guiScene->draw();
+    }
 }
 
 void Drum::onMidiMessage(const ofxMidiMessage &midi)
@@ -233,7 +238,7 @@ void Drum::selectScene(size_t num)
 void Drum::onSliderEvent(ofxDatGuiSliderEvent e) {}
 
 /// SAVE & LOAD
-void Drum::loadPads(const ofxLedController &ledCtrl)
+void Drum::loadPads(const LedMapper::ofxLedController &ledCtrl)
 {
     auto &chanToGrabs = ledCtrl.peekGrabObjects();
     size_t cntr_id = 0;
@@ -257,11 +262,11 @@ void Drum::realLoad()
         return;
 
     if (m_ledCtrl == nullptr)
-        m_ledCtrl = make_unique<ofxLedController>(0, "");
+        m_ledCtrl = make_unique<LedMapper::ofxLedController>(0, "");
     m_ledCtrl->load("");
     m_ledCtrl->setSelected(false);
-    m_ledCtrl->showGui(true);
-    m_ledCtrl->setGuiPosition(0, ofGetHeight() / 1.5);
+    m_ledCtrl->bindGui(LedMapper::ofxLedController::GenerateGui());
+//    m_ledCtrl->setGuiPosition(0, ofGetHeight() / 1.5);
 #if !defined(TARGET_RASPBERRY_PI)
     m_configSender.Connect(m_ledCtrl->getIP().c_str(), s_configInPort);
 #endif

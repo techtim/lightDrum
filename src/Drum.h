@@ -21,7 +21,7 @@ using MidiHandler = function<void(const ofxMidiMessage &)>;
 class Drum {
 
     ofJson m_config;
-    unique_ptr<ofxLedController> m_ledCtrl;
+    unique_ptr<LedMapper::ofxLedController> m_ledCtrl;
     ofPixels m_grabImage;
     ofFbo m_fbo;
 
@@ -37,7 +37,8 @@ class Drum {
     bool m_bNeedLoad;
     unique_ptr<ofxDatGui> m_gui, m_guiScene;
     unique_ptr<ofxDatGuiScrollView> m_listScenes;
-
+    unique_ptr<ofxDatGuiTheme> m_guiTheme;
+    
     ofxUDPManager m_configSender, m_configReceiver;
 
     void updateScenes();
@@ -49,7 +50,7 @@ public:
 
     void addScene();
     void selectScene(size_t num);
-    void loadPads(const ofxLedController &ledCtrl);
+    void loadPads(const LedMapper::ofxLedController &ledCtrl);
     void setupGui();
 
     int getMidiChannel() const { return m_midiChannel; }
