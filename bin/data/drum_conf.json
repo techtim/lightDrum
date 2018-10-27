@@ -1,6 +1,6 @@
 {
     "midiChannel": 10,
-    "midiDevice": 0,
+    "midiDevice": 1,
     "pads": [
         {
             "bounds": {
@@ -261,41 +261,41 @@
     "scenes": [
         {
             "adsr": {
-                "a": 407.0,
+                "a": 87.9100036621094,
                 "d": 0.0,
-                "r": 187.0,
+                "r": 208.789993286133,
                 "s": 0.0
             },
             "color1": {
-                "b": 77,
-                "g": 2,
+                "b": 4,
+                "g": 222,
                 "r": 252
             },
             "color2": {
                 "b": 0,
-                "g": 239,
-                "r": 244
+                "g": 48,
+                "r": 246
             },
-            "routeEnvelope": 2,
-            "routeVelocity": 1,
+            "routeEnvelope": 0,
+            "routeVelocity": 0,
             "shaderName": "default"
         },
         {
             "adsr": {
                 "a": 0.0,
                 "d": 0.0,
-                "r": 341.0,
+                "r": 263.739990234375,
                 "s": 0.0
             },
             "color1": {
-                "b": 73,
-                "g": 3,
-                "r": 240
+                "b": 0,
+                "g": 29,
+                "r": 255
             },
             "color2": {
-                "b": 249,
-                "g": 236,
-                "r": 1
+                "b": 245,
+                "g": 245,
+                "r": 245
             },
             "routeEnvelope": 1,
             "routeVelocity": 3,
@@ -305,39 +305,144 @@
             "adsr": {
                 "a": 0.0,
                 "d": 0.0,
-                "r": 549.0,
+                "r": 296.700012207031,
                 "s": 0.0
             },
             "color1": {
-                "b": 18,
-                "g": 225,
-                "r": 1
+                "b": 208,
+                "g": 3,
+                "r": 249
             },
             "color2": {
                 "b": 247,
                 "g": 0,
                 "r": 64
             },
+            "routeEnvelope": 2,
+            "routeVelocity": 1,
+            "shaderName": "default"
+        },
+        {
+            "adsr": {
+                "a": 131.869995117188,
+                "d": 0.0,
+                "r": 230.770004272461,
+                "s": 0.0
+            },
+            "color1": {
+                "b": 97,
+                "g": 37,
+                "r": 240
+            },
+            "color2": {
+                "b": 188,
+                "g": 3,
+                "r": 250
+            },
+            "routeEnvelope": 1,
+            "routeVelocity": 2,
+            "shaderName": "default"
+        },
+        {
+            "adsr": {
+                "a": 219.779998779297,
+                "d": 0.0,
+                "r": 0.0,
+                "s": 98.9000015258789
+            },
+            "color1": {
+                "b": 255,
+                "g": 255,
+                "r": 255
+            },
+            "color2": {
+                "b": 255,
+                "g": 255,
+                "r": 255
+            },
+            "routeEnvelope": 2,
+            "routeVelocity": 3,
+            "shaderName": "default"
+        },
+        {
+            "adsr": {
+                "a": 0.0,
+                "d": 0.0,
+                "r": 54.9500007629395,
+                "s": 0.0
+            },
+            "color1": {
+                "b": 245,
+                "g": 6,
+                "r": 0
+            },
+            "color2": {
+                "b": 233,
+                "g": 0,
+                "r": 168
+            },
+            "routeEnvelope": 0,
+            "routeVelocity": 1,
+            "shaderName": "default"
+        },
+        {
+            "adsr": {
+                "a": 0.0,
+                "d": 0.0,
+                "r": 153.850006103516,
+                "s": 0.0
+            },
+            "color1": {
+                "b": 227,
+                "g": 145,
+                "r": 1
+            },
+            "color2": {
+                "b": 170,
+                "g": 246,
+                "r": 3
+            },
             "routeEnvelope": 3,
             "routeVelocity": 1,
             "shaderName": "default"
         },
         {
             "adsr": {
-                "a": 308.0,
+                "a": 197.800003051758,
                 "d": 0.0,
-                "r": 0.0,
+                "r": 200.0,
                 "s": 0.0
             },
             "color1": {
-                "b": 171,
-                "g": 85,
-                "r": 0
+                "b": 255,
+                "g": 255,
+                "r": 255
             },
             "color2": {
-                "b": 236,
-                "g": 0,
-                "r": 241
+                "b": 240,
+                "g": 238,
+                "r": 27
+            },
+            "routeEnvelope": 2,
+            "routeVelocity": 0,
+            "shaderName": "default"
+        },
+        {
+            "adsr": {
+                "a": 98.9000015258789,
+                "d": 0.0,
+                "r": 153.850006103516,
+                "s": 0.0
+            },
+            "color1": {
+                "b": 145,
+                "g": 1,
+                "r": 240
+            },
+            "color2": {
+                "b": 64,
+                "g": 209,
+                "r": 30
             },
             "routeEnvelope": 1,
             "routeVelocity": 3,
@@ -347,63 +452,21 @@
             "adsr": {
                 "a": 0.0,
                 "d": 0.0,
-                "r": 275.0,
+                "r": 197.800003051758,
                 "s": 0.0
             },
             "color1": {
-                "b": 249,
-                "g": 2,
-                "r": 217
-            },
-            "color2": {
-                "b": 10,
-                "g": 8,
-                "r": 252
-            },
-            "routeEnvelope": 2,
-            "routeVelocity": 3,
-            "shaderName": "default"
-        },
-        {
-            "adsr": {
-                "a": 264.0,
-                "d": 0.0,
-                "r": 0.0,
-                "s": 0.0
-            },
-            "color1": {
-                "b": 16,
-                "g": 1,
+                "b": 5,
+                "g": 33,
                 "r": 246
             },
             "color2": {
-                "b": 249,
-                "g": 1,
-                "r": 180
+                "b": 1,
+                "g": 84,
+                "r": 244
             },
-            "routeEnvelope": 2,
-            "routeVelocity": 3,
-            "shaderName": "default"
-        },
-        {
-            "adsr": {
-                "a": 231.0,
-                "d": 0.0,
-                "r": 154.0,
-                "s": 0.0
-            },
-            "color1": {
-                "b": 209,
-                "g": 250,
-                "r": 4
-            },
-            "color2": {
-                "b": 2,
-                "g": 252,
-                "r": 171
-            },
-            "routeEnvelope": 3,
-            "routeVelocity": 1,
+            "routeEnvelope": 1,
+            "routeVelocity": 0,
             "shaderName": "default"
         }
     ]

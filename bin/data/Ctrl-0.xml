@@ -1,145 +1,146 @@
 <CONF>
     <colorType>3</colorType>
+    <LedType>WS281X</LedType>
     <PixInLed>2.000000000</PixInLed>
-    <fps>25.000000000</fps>
-    <UdpSend>1</UdpSend>
-    <IpAddress>192.168.2.103</IpAddress>
-    <Port>3001</Port>
+    <fps>25</fps>
+    <UdpSend>0</UdpSend>
+    <IpAddress></IpAddress>
+    <Port>0</Port>
 </CONF>
 <STROKE>
     <LN>
-        <TYPE>1</TYPE>
         <CHANNEL>0</CHANNEL>
-        <fromX>51</fromX>
-        <fromY>180</fromY>
-        <toX>51</toX>
-        <toY>387</toY>
+        <fromX>51.000000000</fromX>
+        <fromY>180.000000000</fromY>
+        <toX>51.000000000</toX>
+        <toY>387.000000000</toY>
+        <TYPE>1</TYPE>
         <bDouble>0</bDouble>
     </LN>
     <LN>
-        <TYPE>1</TYPE>
         <CHANNEL>0</CHANNEL>
-        <fromX>129</fromX>
-        <fromY>180</fromY>
-        <toX>129</toX>
-        <toY>387</toY>
+        <fromX>129.000000000</fromX>
+        <fromY>180.000000000</fromY>
+        <toX>129.000000000</toX>
+        <toY>377.000000000</toY>
+        <TYPE>1</TYPE>
         <bDouble>0</bDouble>
     </LN>
     <LN>
-        <TYPE>1</TYPE>
         <CHANNEL>0</CHANNEL>
-        <fromX>210</fromX>
-        <fromY>180</fromY>
-        <toX>210</toX>
-        <toY>387</toY>
+        <fromX>210.000000000</fromX>
+        <fromY>180.000000000</fromY>
+        <toX>210.000000000</toX>
+        <toY>387.000000000</toY>
+        <TYPE>1</TYPE>
         <bDouble>0</bDouble>
     </LN>
     <LN>
-        <TYPE>1</TYPE>
         <CHANNEL>0</CHANNEL>
-        <fromX>291</fromX>
-        <fromY>180</fromY>
-        <toX>291</toX>
-        <toY>387</toY>
+        <fromX>291.000000000</fromX>
+        <fromY>180.000000000</fromY>
+        <toX>291.000000000</toX>
+        <toY>387.000000000</toY>
+        <TYPE>1</TYPE>
         <bDouble>0</bDouble>
     </LN>
     <LN>
-        <TYPE>1</TYPE>
         <CHANNEL>0</CHANNEL>
-        <fromX>362</fromX>
-        <fromY>180</fromY>
-        <toX>362</toX>
-        <toY>387</toY>
+        <fromX>362.000000000</fromX>
+        <fromY>180.000000000</fromY>
+        <toX>362.000000000</toX>
+        <toY>387.000000000</toY>
+        <TYPE>1</TYPE>
         <bDouble>0</bDouble>
     </LN>
     <LN>
-        <TYPE>1</TYPE>
         <CHANNEL>0</CHANNEL>
-        <fromX>434</fromX>
-        <fromY>180</fromY>
-        <toX>434</toX>
-        <toY>387</toY>
+        <fromX>434.000000000</fromX>
+        <fromY>180.000000000</fromY>
+        <toX>434.000000000</toX>
+        <toY>387.000000000</toY>
+        <TYPE>1</TYPE>
         <bDouble>0</bDouble>
     </LN>
     <LN>
-        <TYPE>1</TYPE>
         <CHANNEL>0</CHANNEL>
-        <fromX>506</fromX>
-        <fromY>180</fromY>
-        <toX>506</toX>
-        <toY>387</toY>
+        <fromX>506.000000000</fromX>
+        <fromY>180.000000000</fromY>
+        <toX>506.000000000</toX>
+        <toY>387.000000000</toY>
+        <TYPE>1</TYPE>
         <bDouble>0</bDouble>
     </LN>
     <LN>
-        <TYPE>1</TYPE>
         <CHANNEL>1</CHANNEL>
-        <fromX>16</fromX>
-        <fromY>132</fromY>
-        <toX>16</toX>
-        <toY>282</toY>
+        <fromX>16.000000000</fromX>
+        <fromY>132.000000000</fromY>
+        <toX>16.000000000</toX>
+        <toY>282.000000000</toY>
+        <TYPE>1</TYPE>
         <bDouble>0</bDouble>
     </LN>
     <LN>
-        <TYPE>1</TYPE>
         <CHANNEL>1</CHANNEL>
-        <fromX>89</fromX>
-        <fromY>137</fromY>
-        <toX>89</toX>
-        <toY>287</toY>
+        <fromX>89.000000000</fromX>
+        <fromY>137.000000000</fromY>
+        <toX>89.000000000</toX>
+        <toY>287.000000000</toY>
+        <TYPE>1</TYPE>
         <bDouble>0</bDouble>
     </LN>
     <LN>
-        <TYPE>1</TYPE>
         <CHANNEL>1</CHANNEL>
-        <fromX>172</fromX>
-        <fromY>134</fromY>
-        <toX>172</toX>
-        <toY>284</toY>
+        <fromX>172.000000000</fromX>
+        <fromY>134.000000000</fromY>
+        <toX>172.000000000</toX>
+        <toY>284.000000000</toY>
+        <TYPE>1</TYPE>
         <bDouble>0</bDouble>
     </LN>
     <LN>
-        <TYPE>1</TYPE>
         <CHANNEL>1</CHANNEL>
-        <fromX>252</fromX>
-        <fromY>132</fromY>
-        <toX>252</toX>
-        <toY>282</toY>
+        <fromX>252.000000000</fromX>
+        <fromY>132.000000000</fromY>
+        <toX>252.000000000</toX>
+        <toY>282.000000000</toY>
+        <TYPE>1</TYPE>
         <bDouble>0</bDouble>
     </LN>
     <LN>
-        <TYPE>1</TYPE>
         <CHANNEL>1</CHANNEL>
-        <fromX>327</fromX>
-        <fromY>135</fromY>
-        <toX>327</toX>
-        <toY>285</toY>
+        <fromX>327.000000000</fromX>
+        <fromY>135.000000000</fromY>
+        <toX>327.000000000</toX>
+        <toY>285.000000000</toY>
+        <TYPE>1</TYPE>
         <bDouble>0</bDouble>
     </LN>
     <LN>
-        <TYPE>1</TYPE>
         <CHANNEL>1</CHANNEL>
-        <fromX>398</fromX>
-        <fromY>132</fromY>
-        <toX>398</toX>
-        <toY>282</toY>
+        <fromX>398.000000000</fromX>
+        <fromY>132.000000000</fromY>
+        <toX>398.000000000</toX>
+        <toY>282.000000000</toY>
+        <TYPE>1</TYPE>
         <bDouble>0</bDouble>
     </LN>
     <LN>
-        <TYPE>1</TYPE>
         <CHANNEL>1</CHANNEL>
-        <fromX>467</fromX>
-        <fromY>133</fromY>
-        <toX>467</toX>
-        <toY>283</toY>
+        <fromX>467.000000000</fromX>
+        <fromY>133.000000000</fromY>
+        <toX>467.000000000</toX>
+        <toY>283.000000000</toY>
+        <TYPE>1</TYPE>
         <bDouble>0</bDouble>
     </LN>
     <LN>
-        <TYPE>1</TYPE>
         <CHANNEL>1</CHANNEL>
-        <fromX>544</fromX>
-        <fromY>132</fromY>
-        <toX>544</toX>
-        <toY>282</toY>
+        <fromX>544.000000000</fromX>
+        <fromY>132.000000000</fromY>
+        <toX>544.000000000</toX>
+        <toY>282.000000000</toY>
+        <TYPE>1</TYPE>
         <bDouble>0</bDouble>
     </LN>
 </STROKE>
