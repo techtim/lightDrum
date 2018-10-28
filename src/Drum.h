@@ -22,6 +22,7 @@ class Drum {
 
     ofJson m_config;
     unique_ptr<LedMapper::ofxLedController> m_ledCtrl;
+    unique_ptr<ofxDatGui> m_guiLedCtrl;
     ofPixels m_grabImage;
     ofFbo m_fbo;
 
@@ -36,7 +37,7 @@ class Drum {
     uint64_t m_lockedByRemoteTime;
     bool m_bNeedLoad;
     unique_ptr<ofxDatGui> m_gui, m_guiScene;
-    unique_ptr<ofxDatGuiScrollView> m_listScenes;
+    ofxDatGuiScrollView* m_listScenes;
     unique_ptr<ofxDatGuiTheme> m_guiTheme;
     
     ofxUDPManager m_configSender, m_configReceiver;
@@ -57,12 +58,7 @@ public:
     int getMidiDevice() const { return m_midiDevice; }
     void onMidiMessage(const ofxMidiMessage &eventArgs);
 
-    void onScrollViewEvent(ofxDatGuiScrollViewEvent e);
-    void onToggleClick(ofxDatGuiToggleEvent e);
-    void onButtonClick(ofxDatGuiButtonEvent e);
-    void onSliderEvent(ofxDatGuiSliderEvent e);
-
-    void reset();
+    void reloadShader();
 
     void update();
     void draw();

@@ -16,13 +16,15 @@ static const string LDGUIButtonSave = "Save";
 static const string LDGUIButtonSendConfig = "SEND config to Drum";
 static const string LDGUIButtonAdd = "Add scene";
 static const string LDGUIListScenes = "scenes";
-static const int LDGUIListSize = 5;
+static const int LDGUIListSize = 4;
 static const int LD_GUI_WIDTH = 200;
 static const size_t s_defaultStartNote = 12;
 static const uint64_t MILLISEC_IN_FRAME = 1000.0 / 25.0; // 25 FPS sending speed to LEDs
 static const uint64_t s_lockTime = 1000;
 
 unsigned short s_configInPort = 13131;
+
+using namespace LedMapper;
 
 Drum::Drum(const string &path)
     : m_currentScene(0)
@@ -51,6 +53,7 @@ Drum::Drum(const string &path)
 
 void Drum::setupGui()
 {
+    m_guiLedCtrl = ofxLedController::GenerateGui();
     m_gui = make_unique<ofxDatGui>(ofxDatGuiAnchor::TOP_RIGHT);
     m_guiScene = Scene::GenerateGui();
     m_guiTheme = make_unique<ofxDatGuiThemeLD>();
@@ -62,40 +65,55 @@ void Drum::setupGui()
     slider->bind(m_midiChannel);
     slider->setPrecision(0);
 
-    auto tgl = m_gui->addToggle(LDGUIButtonLedMap, false);
-    tgl->onToggleEvent(this, &Drum::onToggleClick);
+    slider = m_gui->addSlider("MIDI device", 0, 16);
+    slider->bind(m_midiDevice);
+    slider->setPrecision(0);
 
-    auto btn = m_gui->addButton(LDGUIButtonLedSetup);
-    btn->onButtonEvent(this, &Drum::onButtonClick);
+    m_gui->addToggle(LDGUIButtonLedMap, false)->onToggleEvent([this](ofxDatGuiToggleEvent e) {
+        m_ledCtrl->setSelected(e.checked);
+    });
 
-    btn = m_gui->addButton(LDGUIButtonSendConfig);
-    btn->onButtonEvent(this, &Drum::onButtonClick);
+    m_gui->addButton(LDGUIButtonLedSetup)->onButtonEvent([this](ofxDatGuiButtonEvent e) {
+        this->loadPads(*m_ledCtrl);
+    });
 
-    btn = m_gui->addButton(LDGUIButtonLoad);
-    btn->onButtonEvent(this, &Drum::onButtonClick);
+    m_gui->addButton(LDGUIButtonSendConfig)->onButtonEvent([this](ofxDatGuiButtonEvent e) {
+        this->sendConfig();
+    });
 
-    btn = m_gui->addButton(LDGUIButtonSave);
-    btn->onButtonEvent(this, &Drum::onButtonClick);
+    m_gui->addButton(LDGUIButtonLoad)->onButtonEvent([this](ofxDatGuiButtonEvent e) {
+        this->load();
+    });
 
-    btn = m_gui->addButton(LDGUIButtonAdd);
-    btn->onButtonEvent(this, &Drum::onButtonClick);
+    m_gui->addButton(LDGUIButtonSave)->onButtonEvent([this](ofxDatGuiButtonEvent e) {
+        this->save();
+    });
 
-    m_listScenes = make_unique<ofxDatGuiScrollView>(LDGUIListScenes, LDGUIListSize);
-    m_listScenes->onScrollViewEvent(this, &Drum::onScrollViewEvent);
+    m_gui->addButton(LDGUIButtonAdd)->onButtonEvent([this](ofxDatGuiButtonEvent e) {
+        this->addScene();
+    });
+
+    m_listScenes = new ofxDatGuiScrollView(LDGUIListScenes, LDGUIListSize);
+    m_listScenes->onScrollViewEvent([this](ofxDatGuiScrollViewEvent e) { selectScene(e.index); });
     m_listScenes->setTheme(m_guiTheme.get());
     m_listScenes->setWidth(LD_GUI_WIDTH);
     m_listScenes->setPosition(m_gui->getPosition().x, m_gui->getPosition().y + m_gui->getHeight());
     m_listScenes->setBackgroundColor(ofColor(10));
+
+    m_gui->addFolder("Scenes")->attachItem(m_listScenes);
 }
 
 void Drum::update()
 {
 #if !defined(TARGET_RASPBERRY_PI)
     sendBlock();
-#endif
+#elif
     receiveConfigOrBlock();
-    auto now = ofGetSystemTime();
-    if (now - m_lastFrameTime > MILLISEC_IN_FRAME && now - m_lockedByRemoteTime > s_lockTime) {
+#endif
+
+    /// if not blocked by remote app send data to LEDs
+    auto now = ofGetSystemTimeMillis();
+    if (now - m_lockedByRemoteTime > s_lockTime) {
         m_ledCtrl->sendUdp(m_grabImage);
         m_lastFrameTime = now;
     }
@@ -103,10 +121,15 @@ void Drum::update()
     if (m_nextScene != m_currentScene)
         selectScene(m_nextScene);
 
-    m_gui->update();
+    if (m_ledCtrl->isSelected())
+        m_guiLedCtrl->update();
+    else
+        m_guiScene->update();
+
     m_listScenes->update();
-    m_guiScene->update();
-    
+
+    if (!m_scenes.empty())
+        m_scenes[m_currentScene].update();
 }
 
 void Drum::draw()
@@ -122,29 +145,28 @@ void Drum::draw()
         glClear(GL_COLOR_BUFFER_BIT);
         ofSetColor(255, 255, 255, 255);
         for (auto &pad : m_pads) {
-            m_scenes[m_currentScene].updateAndDraw(pad);
+            m_scenes[m_currentScene].draw(pad);
         }
-        
+
         m_fbo.end();
         ofSetColor(255, 255, 255, 255);
         m_fbo.draw(m_grabBounds);
         m_fbo.readToPixels(m_grabImage);
     }
-    
+
     ofSetColor(255, 255, 255, 255);
     ofNoFill();
     ofDrawRectangle(m_grabBounds);
     ofFill();
-    
+
     m_gui->setPosition(ofGetWidth() - LM_GUI_WIDTH, 0);
-    m_gui->draw();
-    
+    //    m_gui->draw();
+
     if (m_ledCtrl->isSelected()) {
         m_ledCtrl->draw();
+        m_guiLedCtrl->draw();
     }
     else {
-        m_listScenes->setPosition(m_gui->getPosition().x, m_gui->getPosition().y + m_gui->getHeight());
-        m_listScenes->draw();
         m_guiScene->draw();
     }
 }
@@ -161,8 +183,9 @@ void Drum::onMidiMessage(const ofxMidiMessage &midi)
         return;
 
     if (midi.status == MIDI_NOTE_ON) {
-        if (midi.velocity == 0 || (m_pitchToPad.find(midi.pitch) == m_pitchToPad.end()
-                                   || m_pitchToPad[midi.pitch] >= m_pads.size()))
+        if (midi.velocity == 0
+            || (m_pitchToPad.find(midi.pitch) == m_pitchToPad.end()
+                   || m_pitchToPad[midi.pitch] >= m_pads.size()))
             return;
 
         m_pads[m_pitchToPad[midi.pitch]].lastTrigTime = ofGetSystemTime();
@@ -180,41 +203,6 @@ void Drum::onMidiMessage(const ofxMidiMessage &midi)
     }
 }
 
-/// GUI EVENTS
-void Drum::onScrollViewEvent(ofxDatGuiScrollViewEvent e)
-{
-    if (e.parent->getName() == LDGUIListScenes) {
-        selectScene(e.index);
-    }
-}
-
-void Drum::onToggleClick(ofxDatGuiToggleEvent e)
-{
-    if (e.target->getName() == LDGUIButtonLedMap)
-        m_ledCtrl->setSelected(e.checked);
-
-    ofLogVerbose() << LDGUIButtonLedMap << " clicked => " << e.checked;
-}
-
-void Drum::onButtonClick(ofxDatGuiButtonEvent e)
-{
-    if (e.target->getName() == LDGUIButtonLedSetup) {
-        loadPads(*m_ledCtrl);
-    }
-
-    if (e.target->getName() == LDGUIButtonAdd) {
-        addScene();
-    }
-    if (e.target->getName() == LDGUIButtonSendConfig) {
-        sendConfig();
-    }
-
-    if (e.target->getName() == LDGUIButtonLoad)
-        load();
-    if (e.target->getName() == LDGUIButtonSave)
-        save();
-}
-
 void Drum::addScene()
 {
     m_scenes.emplace_back(Scene(m_scenes.size() + 1));
@@ -224,18 +212,17 @@ void Drum::addScene()
 void Drum::selectScene(size_t num)
 {
     if (m_currentScene < m_listScenes->children.size())
-        m_listScenes->get(m_currentScene)->setBackgroundColor(0);
+        m_listScenes->get(m_currentScene)->setBackgroundColor(10);
 
     m_currentScene = num % m_scenes.size();
     m_nextScene = m_currentScene;
 
     if (m_currentScene < m_listScenes->children.size())
         m_listScenes->get(m_currentScene)->setBackgroundColor(50);
-    
+
     m_scenes[m_currentScene].bindGui(m_guiScene.get());
     ofLogVerbose() << "Select m_currentScene=" << m_currentScene;
 }
-void Drum::onSliderEvent(ofxDatGuiSliderEvent e) {}
 
 /// SAVE & LOAD
 void Drum::loadPads(const LedMapper::ofxLedController &ledCtrl)
@@ -246,12 +233,18 @@ void Drum::loadPads(const LedMapper::ofxLedController &ledCtrl)
     for (auto &chan : chanToGrabs)
         for (auto &grab : chan) {
             auto pad = Pad(grab->getBounds(), grab->getFrom(), grab->getTo(),
-                           static_cast<int>(s_defaultStartNote + cntr_id), 0.f, 0);
+                s_defaultStartNote + cntr_id, 0.f, 0);
             m_pitchToPad[pad.pitch] = cntr_id;
             ofLog(OF_LOG_VERBOSE) << "Pad load id=" << cntr_id << " bounds=" << pad.bounds;
             m_pads.emplace_back(move(pad));
             cntr_id++;
         }
+}
+
+void Drum::reloadShader() {
+    if (m_scenes.empty())
+        return;
+    m_scenes[m_currentScene].reloadShader();
 }
 
 void Drum::load() { m_bNeedLoad = true; }
@@ -263,10 +256,11 @@ void Drum::realLoad()
 
     if (m_ledCtrl == nullptr)
         m_ledCtrl = make_unique<LedMapper::ofxLedController>(0, "");
+
     m_ledCtrl->load("");
     m_ledCtrl->setSelected(false);
-    m_ledCtrl->bindGui(LedMapper::ofxLedController::GenerateGui());
-//    m_ledCtrl->setGuiPosition(0, ofGetHeight() / 1.5);
+    m_ledCtrl->bindGui(m_guiLedCtrl.get());
+
 #if !defined(TARGET_RASPBERRY_PI)
     m_configSender.Connect(m_ledCtrl->getIP().c_str(), s_configInPort);
 #endif
@@ -297,25 +291,26 @@ void Drum::realLoad()
     m_bNeedLoad = false;
 }
 
-void Drum::updateScenes() {
+void Drum::updateScenes()
+{
     m_listScenes->clear();
-    
+
     for (size_t i = 0; i < m_scenes.size(); ++i)
         m_listScenes->add(ofToString(i + 1));
-    
+
     if (m_scenes.empty())
         addScene();
-    
+
     selectScene(m_currentScene);
 }
 
 void Drum::loadFromJson(const ofJson &json)
 {
-    if (json.count("midiChannel"))
-        m_midiChannel = json.at("midiChannel").get<int>();
 
-    if (json.count("midiDevice"))
-        m_midiDevice = json.at("midiDevice").get<int>();
+    /// 10 is the default drum channel according to general midi
+    m_midiChannel = json.count("midiChannel") ? json.at("midiChannel").get<int>() : 10;
+
+    m_midiDevice = json.count("midiDevice") ? json.at("midiDevice").get<int>() : 0;
 
     if (json.count("pads")) {
         try {
@@ -370,7 +365,7 @@ void Drum::save(size_t midiDevice)
 constexpr char flag = 1;
 void Drum::sendBlock()
 {
-    if (m_ledCtrl->isStatusOk()) {
+    if (m_ledCtrl->isStatusOk() && m_ledCtrl->isSending()) {
         m_configSender.Send(&flag, 1);
     }
 }
@@ -383,15 +378,17 @@ void Drum::sendConfig()
     m_configSender.SetSendBufferSize(4096 * 3);
     m_configSender.SetNonBlocking(true);
     save();
+    m_config["midiDevice"] = 1;
     string conf = m_config.dump();
     m_configSender.Send(conf.c_str(), conf.size());
 #endif
 }
 
-static char udpMessage[3000];
+static char s_udpMessage[20000];
+
 void Drum::receiveConfigOrBlock()
 {
-    int size = m_configReceiver.Receive(udpMessage, s_configInPort);
+    int size = m_configReceiver.Receive(s_udpMessage, s_configInPort);
     if (size == 0)
         return;
 
@@ -401,7 +398,7 @@ void Drum::receiveConfigOrBlock()
     }
 
     try {
-        istringstream in(string(udpMessage, size));
+        istringstream in(string(s_udpMessage, size));
         ofJson json;
         in >> json;
         ofLogWarning() << "Json config received: \n" << json.dump(4);

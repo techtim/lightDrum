@@ -34,6 +34,7 @@ struct Pad {
     {
     }
 
+    glm::vec3 getResolution() const { return {bounds.getWidth(), bounds.getHeight(), 1}; }
     ofRectangle bounds;
     ofVec2f from;
     ofVec2f to;

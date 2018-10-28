@@ -8,9 +8,20 @@ void ofApp::setup()
     ofSetVerticalSync(true);
     ofBackground(0, 0, 0);
     ofSetFrameRate(60);
-    
+
 #ifndef NDEBUG
     ofSetLogLevel(OF_LOG_VERBOSE);
+#else
+    ofSetLogLevel(OF_LOG_WARNING);
+
+/// Set data path to Resources
+#ifdef WIN32
+    // no-op
+#elif defined(__APPLE__)
+    ofSetDataPathRoot("../Resources/");
+#elif defined(TARGET_LINUX)
+    // no-op
+#endif
 #endif
 
     ofSetEscapeQuitsApp(false);
@@ -70,7 +81,6 @@ void ofApp::exit()
 //--------------------------------------------------------------
 void ofApp::newMidiMessage(ofxMidiMessage &msg)
 {
-
     // make a copy of the latest message
     m_midiMessage = msg;
     m_drum.onMidiMessage(msg);
@@ -94,6 +104,9 @@ void ofApp::keyPressed(int key)
     switch (key) {
         case 'i':
             m_midiIn.listInPorts();
+            break;
+        case 'r':
+            m_drum.reloadShader();
             break;
         case OF_KEY_UP:
             ++m_midiPortNum;

@@ -27,7 +27,7 @@ const static string s_ShaderFolder = "shaders/";
 static vector<string> s_shadersList;
 
 class Scene {
-    //    ofShader m_shader;
+    ofShader m_shader;
     bool m_bShaderLoad = false;
 
 public:
@@ -43,7 +43,7 @@ public:
     : m_bShaderLoad(false)
     , m_id(_id)
     , m_enable(false)
-    , m_adsr(200, 0, 0, 200)
+    , m_adsr(100, 0, 0, 100)
     , m_color1(255)
     , m_color2(255)
     , m_shaderName("default")
@@ -124,7 +124,7 @@ public:
         }
 
         auto path = s_ShaderFolder + m_shaderName;
-        //        m_bShaderLoad = m_shader.load(path + ".vs", path + ".fs");
+        m_bShaderLoad = m_shader.load(path + ".vert", path + ".frag");
     }
 
     bool setupShader(const string &name)
@@ -134,18 +134,23 @@ public:
         }
         m_shaderName = name;
         m_bShaderLoad = false;
+        return true;
     }
 
     void reloadShader() { m_bShaderLoad = false; }
 
-    void updateAndDraw(Pad &pad) const
+    void update() {
+        updateShader();
+    }
+
+    void draw(Pad &pad) const
     {
         auto durationMs = ofGetSystemTime() - pad.lastTrigTime;
-        ofNoFill();
-        ofSetColor(100);
-        ofDrawRectangle(pad.bounds.x - 1, pad.bounds.y - 1, pad.bounds.width + 2,
-                        pad.bounds.height + 2);
-        ofFill();
+//        ofNoFill();
+//        ofSetColor(100);
+//        ofDrawRectangle(pad.bounds.x - 1, pad.bounds.y - 1, pad.bounds.width + 2,
+//                        pad.bounds.height + 2);
+//        ofFill();
 
         ofColor color(0, 0, 0, 255);
 
@@ -162,7 +167,6 @@ public:
             color = m_color1.getLerped(m_color2, pad.value);
             ofSetColor(color);
             ofDrawRectangle(pos.x - 10, pos.y - 15, 20, 15);
-            return;
         }
         else if (m_routeEnvelope == VALUE_TO_COLOR) {
             color = m_color1.getLerped(m_color2, pad.value);
@@ -173,7 +177,6 @@ public:
             color = m_color1.getLerped(m_color2, pad.value);
             ofSetColor(color);
             ofDrawRectangle(pos.x - 10, pos.y - 25, 20, 25);
-            return;
         }
         else if (m_routeVelocity == VALUE_TO_COLOR) {
             color = m_color1.getLerped(m_color2, pad.velocity);
@@ -184,31 +187,28 @@ public:
             color.setBrightness(pad.value * 255.0f);
         }
         if (m_routeVelocity == VALUE_TO_BRIGHT) {
-            //            color = ofColor(color, pad.velocity * 255.0f);
+//            color = ofColor(color, pad.velocity * 255.0f);
             color.setBrightness(pad.velocity * 255.0f);
         }
 
         /// shaders in progress
-        /*
-        if (false) {
-            updateShader();
-            if (m_bShaderLoad) {
-                m_shader.begin();
-                // we want to pass in some varrying values to animate our type / color
-                m_shader.setUniform4f("color1", m_color1);
-                m_shader.setUniform4f("color2", m_color2);
-                m_shader.setUniform1f("velocity", pad.velocity);
-                m_shader.setUniform1f("envelope", pad.value);
-                // m_shader.setUniform2f("texSize", ofVec2f(pad.bounds.width, pad.bounds.height));
-                m_shader.setUniform1i("envelopeTo", static_cast<int>(m_routeEnvelope));
-                m_shader.setUniform1i("velocityTo", static_cast<int>(m_routeVelocity));
-                ofDrawRectangle(pad.bounds);
-                m_shader.end();
-            }
+
+        if (m_bShaderLoad) {
+            m_shader.begin();
+            // we want to pass in some varrying values to animate our type / color
+            m_shader.setUniform4f("color1", m_color1);
+            m_shader.setUniform4f("color2", m_color2);
+            m_shader.setUniform1f("velocity", pad.velocity);
+            m_shader.setUniform1f("envelope", pad.value);
+            m_shader.setUniform2f("texSize", ofVec2f(pad.bounds.width, pad.bounds.height));
+            m_shader.setUniform1i("envelopeTo", static_cast<int>(m_routeEnvelope));
+            m_shader.setUniform1i("velocityTo", static_cast<int>(m_routeVelocity));
+            m_shader.setUniform4f("drawOffset", glm::vec4(pad.bounds.x, pad.bounds.y, 0.f, 0.f));
+            m_shader.setUniform3f("iResolution", pad.getResolution());
+            ofDrawRectangle(pad.bounds);
+            m_shader.end();
         }
-         */
-        ofSetColor(color);
-        ofDrawRectangle(pad.bounds);
+
     }
 
     float getADSRValue(const ofVec4f &adsr, const uint64_t &durationMs) const
@@ -216,7 +216,7 @@ public:
         auto totalAdsr = adsr.x + adsr.y + adsr.z + adsr.w;
         float ADSRvalue = 0;
 
-        if (totalAdsr < durationMs || adsr == ofVec4f(0.0)) {
+        if (totalAdsr < durationMs || totalAdsr == 0.0) {
             return ADSRvalue;
         }
         else if (durationMs <= adsr.x) { // R attack
