@@ -1,6 +1,6 @@
 {
     "midiChannel": 10,
-    "midiDevice": 0,
+    "midiDevice": 1,
     "pads": [
         {
             "bounds": {
