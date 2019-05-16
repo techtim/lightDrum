@@ -13,6 +13,7 @@ void ofApp::setup()
     ofSetLogLevel(OF_LOG_VERBOSE);
 #else
     ofSetLogLevel(OF_LOG_WARNING);
+#endif
 
 /// Set data path to Resources
 #ifdef WIN32
@@ -22,7 +23,7 @@ void ofApp::setup()
 #elif defined(TARGET_LINUX)
     // no-op
 #endif
-#endif
+
 
     ofSetEscapeQuitsApp(false);
     

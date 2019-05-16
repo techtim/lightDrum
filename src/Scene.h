@@ -23,13 +23,15 @@ const static vector<string> s_PadValueToStr
 static const float ONE_TO_127 = 1.0f / 127.0f;
 static const string LDGUI_VALUE_ROUTE_ENV = "ADSR route to";
 static const string LDGUI_VALUE_ROUTE_VEL = "Velocity route to";
+static const string LDGUI_SHADERS_FOLDER = "Shaders";
 const static string s_ShaderFolder = "shaders/";
 static vector<string> s_shadersList;
 
 class Scene {
     ofShader m_shader;
     bool m_bShaderLoad = false;
-
+    unique_ptr<ofxDatGuiScrollView> m_listShaders;
+    
 public:
     size_t m_id;
     bool m_enable;
@@ -50,6 +52,14 @@ public:
     , m_routeEnvelope(1)
     , m_routeVelocity(0)
     {
+        if (!s_shadersList.empty()) {
+            m_listShaders = make_unique<ofxDatGuiScrollView>(LDGUI_SHADERS_FOLDER, 5);
+            m_listShaders->onScrollViewEvent([this](ofxDatGuiScrollViewEvent e) { selectShader(e.index); });
+            m_listShaders->setWidth(200);
+            m_listShaders->setBackgroundColor(ofColor(10));
+            for (const string &shader : s_shadersList)
+                m_listShaders->add(shader);
+        }
     }
     
     static unique_ptr<ofxDatGui> GenerateGui()
@@ -82,13 +92,13 @@ public:
         gui->addLabel("MIDI Velocity");
         gui->addDropdown(LDGUI_VALUE_ROUTE_VEL, s_PadValueToStr);
 
-        /// Shaders
-        if (s_shadersList.empty()) {
-        }
-
         gui->setEnabled(true);
         gui->setVisible(true);
 
+        if (!s_shadersList.empty()) {
+            gui->addFolder(LDGUI_SHADERS_FOLDER);
+        }
+        
         return move(gui);
     }
 
@@ -115,6 +125,14 @@ public:
             dropDown->onDropdownEvent(this, &Scene::onDropdownEvent);
             dropDown->select(m_routeVelocity);
         }
+        
+        /// Shaders
+        // auto folder = gui->getFolder(LDGUI_SHADERS_FOLDER);
+        // if (folder->getName() != "X" && !s_shadersList.empty()) {
+        //    delete folder;
+        //    gui->addFolder(LDGUI_SHADERS_FOLDER)->attachItem(m_listShaders.get());
+        // }
+
     }
 
     void updateShader()
@@ -139,18 +157,23 @@ public:
 
     void reloadShader() { m_bShaderLoad = false; }
 
+    void selectShader(size_t index) {
+        if (index < s_shadersList.size())
+            setupShader(s_shadersList[index]);
+    }
+    
     void update() {
         updateShader();
     }
 
     void draw(Pad &pad) const
     {
-        auto durationMs = ofGetSystemTime() - pad.lastTrigTime;
-//        ofNoFill();
-//        ofSetColor(100);
-//        ofDrawRectangle(pad.bounds.x - 1, pad.bounds.y - 1, pad.bounds.width + 2,
-//                        pad.bounds.height + 2);
-//        ofFill();
+        auto durationMs = ofGetSystemTimeMillis() - pad.lastTrigTime;
+        ofNoFill();
+        ofSetColor(100);
+        ofDrawRectangle(pad.bounds.x - 1, pad.bounds.y - 1, pad.bounds.width + 2,
+                        pad.bounds.height + 2);
+        ofFill();
 
         ofColor color(0, 0, 0, 255);
 
@@ -168,32 +191,36 @@ public:
             ofSetColor(color);
             ofDrawRectangle(pos.x - 10, pos.y - 15, 20, 15);
         }
-        else if (m_routeEnvelope == VALUE_TO_COLOR) {
-            color = m_color1.getLerped(m_color2, pad.value);
-        }
-
-        if (m_routeVelocity == VALUE_TO_POSITION) {
+        else if (m_routeVelocity == VALUE_TO_POSITION) {
             auto pos = pad.from.getInterpolated(pad.to, pad.velocity);
-            color = m_color1.getLerped(m_color2, pad.value);
+            ofSetColor(m_color1.getLerped(m_color2, pad.value));
+            auto posUp = pos.getInterpolated(pad.from, pad.value);
+            ofDrawRectangle(posUp.x - 10, posUp.y - 25, 20, 25);
+            auto posDown = pos.getInterpolated(pad.to, pad.value);
+            ofDrawRectangle(posDown.x - 10, posDown.y - 25, 20, 25);
+        } else {
+        
+            if (m_routeVelocity == VALUE_TO_COLOR) {
+                color = m_color1.getLerped(m_color2, pad.velocity);
+            }
+            else if (m_routeEnvelope == VALUE_TO_COLOR) {
+                color = m_color1.getLerped(m_color2, pad.value);
+            }
+            
+            if (m_routeEnvelope == VALUE_TO_BRIGHT) {
+                //            color = ofColor(color, pad.value * 255.0f);
+                color.setBrightness(pad.value * 255.0f);
+            }
+            else if (m_routeVelocity == VALUE_TO_BRIGHT) {
+    //            color = ofColor(color, pad.velocity * 255.0f);
+                color.setBrightness(pad.velocity * 255.0f);
+            }
             ofSetColor(color);
-            ofDrawRectangle(pos.x - 10, pos.y - 25, 20, 25);
-        }
-        else if (m_routeVelocity == VALUE_TO_COLOR) {
-            color = m_color1.getLerped(m_color2, pad.velocity);
-        }
-
-        if (m_routeEnvelope == VALUE_TO_BRIGHT) {
-            //            color = ofColor(color, pad.value * 255.0f);
-            color.setBrightness(pad.value * 255.0f);
-        }
-        if (m_routeVelocity == VALUE_TO_BRIGHT) {
-//            color = ofColor(color, pad.velocity * 255.0f);
-            color.setBrightness(pad.velocity * 255.0f);
+            ofDrawRectangle(pad.bounds);
         }
 
         /// shaders in progress
-
-        if (m_bShaderLoad) {
+        if (false && m_bShaderLoad) {
             m_shader.begin();
             // we want to pass in some varrying values to animate our type / color
             m_shader.setUniform4f("color1", m_color1);
@@ -248,7 +275,7 @@ public:
         }
     }
 
-    void loadShaders()
+    static void loadShaders()
     {
         s_shadersList.clear();
 

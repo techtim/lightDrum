@@ -53,7 +53,8 @@ Drum::Drum(const string &path)
 
 void Drum::setupGui()
 {
-    m_guiLedCtrl = ofxLedController::GenerateGui();
+    m_guiLedCtrl = GenerateOutputGui();
+    m_guiLedCtrl->setPosition(ofGetWidth() - m_guiLedCtrl->getWidth(), ofGetHeight()/2);
     m_gui = make_unique<ofxDatGui>(ofxDatGuiAnchor::TOP_RIGHT);
     m_guiScene = Scene::GenerateGui();
     m_guiTheme = make_unique<ofxDatGuiThemeLD>();
@@ -114,7 +115,7 @@ void Drum::update()
     /// if not blocked by remote app send data to LEDs
     auto now = ofGetSystemTimeMillis();
     if (now - m_lockedByRemoteTime > s_lockTime) {
-        m_ledCtrl->sendUdp(m_grabImage);
+        m_ledCtrl->send(m_fbo.getTexture());
         m_lastFrameTime = now;
     }
 
@@ -151,7 +152,6 @@ void Drum::draw()
         m_fbo.end();
         ofSetColor(255, 255, 255, 255);
         m_fbo.draw(m_grabBounds);
-        m_fbo.readToPixels(m_grabImage);
     }
 
     ofSetColor(255, 255, 255, 255);
@@ -244,6 +244,7 @@ void Drum::loadPads(const LedMapper::ofxLedController &ledCtrl)
 void Drum::reloadShader() {
     if (m_scenes.empty())
         return;
+    
     m_scenes[m_currentScene].reloadShader();
 }
 
@@ -265,6 +266,9 @@ void Drum::realLoad()
     m_configSender.Connect(m_ledCtrl->getIP().c_str(), s_configInPort);
 #endif
 
+    /// update points and grab bounds
+    m_ledCtrl->markDirtyGrabPoints();
+    m_ledCtrl->updateGrabPoints();
     m_grabBounds = (m_ledCtrl != nullptr ? m_ledCtrl->peekBounds()
                                          : ofRectangle(0, 0, ofGetWidth(), ofGetHeight()));
     /// RPI specific RGBA textures, works correct only with 4 channel tex
@@ -272,10 +276,12 @@ void Drum::realLoad()
     m_fbo.begin();
     ofClear(255, 255, 255, 0);
     m_fbo.end();
-    m_grabImage.allocate(m_grabBounds.width, m_grabBounds.height, OF_IMAGE_COLOR_ALPHA);
-
+    
+    /// Update shaders list for Scenes
+    // Scene::loadShaders();
+    
     loadFromJson(ofLoadJson("drum_conf.json"));
-
+    
     m_listScenes->clear();
     for (size_t i = 0; i < m_scenes.size(); ++i)
         m_listScenes->add(ofToString(i + 1));
